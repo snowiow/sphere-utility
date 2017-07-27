@@ -78,7 +78,7 @@ update msg model =
             }
 
         InputLat val ->
-            case String.toFloat val of
+            case parseLat val of
                 Ok lat ->
                     { model
                         | latlng = setLat lat model.latlng
@@ -90,7 +90,7 @@ update msg model =
                     }
 
         InputLng val ->
-            case String.toFloat val of
+            case parseLng val of
                 Ok lng ->
                     { model
                         | latlng = setLng lng model.latlng
@@ -243,9 +243,7 @@ distanceView model =
         [ div [ class "row" ]
             [ div [ class "col-2" ] []
             , div [ class "col-8" ]
-                [ h2 [ class "title" ] [ text "Calculate distance between two points" ]
-                , h5 [] [ text model.err ]
-                ]
+                [ h2 [ class "title" ] [ text "Calculate distance between two points" ] ]
             , div [ class "col-2" ] []
             ]
         , div [ class "row" ]
@@ -295,7 +293,7 @@ conversionView model =
             [ div [ class "col-2" ] []
             , div [ class "col-8" ]
                 [ h2 [ class "title" ] [ text "Convert Point to LatLng/ LatLng to Point" ]
-                , h5 [] [ text model.err ]
+                , h5 [ class "error" ] [ text model.err ]
                 ]
             , div [ class "col-2" ] []
             ]
