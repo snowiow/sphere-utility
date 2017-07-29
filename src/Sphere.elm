@@ -28,6 +28,6 @@ pointToLatlng point =
         qY =
             point.y * point.y
     in
-        { lat = qX + qY |> sqrt |> atan2 point.z
-        , lng = atan2 point.x point.y
+        { lat = qX + qY |> sqrt |> atan2 point.z |> radToDeg
+        , lng = atan2 point.y point.x |> radToDeg
         }

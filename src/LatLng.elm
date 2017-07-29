@@ -68,6 +68,11 @@ degToRad deg =
         deg * pi180
 
 
+radToDeg : Float -> Float
+radToDeg rad =
+    rad * 180 / pi
+
+
 ieeeReminder : Float -> Float -> Float
 ieeeReminder f1 f2 =
     let
