@@ -50,18 +50,12 @@ type Msg
     | ConvertPoint
     | InputLat String
     | InputLng String
-    | InputX String
-    | InputY String
-    | InputZ String
-    | InputD1X String
-    | InputD1Y String
-    | InputD1Z String
-    | InputD2X String
-    | InputD2Y String
-    | InputD2Z String
     | CalculateDistance
     | CopyD1
     | CopyD2
+    | PMsg PointMsg
+    | D1Msg PointMsg
+    | D2Msg PointMsg
 
 
 update : Msg -> Model -> Model
@@ -101,6 +95,34 @@ update msg model =
                         | err = msg
                     }
 
+        PMsg subMsg ->
+            updateP subMsg model
+
+        D1Msg subMsg ->
+            updateD1 subMsg model
+
+        D2Msg subMsg ->
+            updateD2 subMsg model
+
+        CalculateDistance ->
+            { model
+                | dist = Point.dist model.d1 model.d2
+            }
+
+        CopyD1 ->
+            { model
+                | d1 = model.point
+            }
+
+        CopyD2 ->
+            { model
+                | d2 = model.point
+            }
+
+
+updateP : PointMsg -> Model -> Model
+updateP msg model =
+    case msg of
         InputX val ->
             case String.toFloat val of
                 Ok x ->
@@ -137,7 +159,11 @@ update msg model =
                         | err = msg
                     }
 
-        InputD1X val ->
+
+updateD1 : PointMsg -> Model -> Model
+updateD1 msg model =
+    case msg of
+        InputX val ->
             case String.toFloat val of
                 Ok x ->
                     { model
@@ -149,7 +175,7 @@ update msg model =
                         | err = msg
                     }
 
-        InputD1Y val ->
+        InputY val ->
             case String.toFloat val of
                 Ok y ->
                     { model
@@ -161,7 +187,7 @@ update msg model =
                         | err = msg
                     }
 
-        InputD1Z val ->
+        InputZ val ->
             case String.toFloat val of
                 Ok z ->
                     { model
@@ -173,7 +199,11 @@ update msg model =
                         | err = msg
                     }
 
-        InputD2X val ->
+
+updateD2 : PointMsg -> Model -> Model
+updateD2 msg model =
+    case msg of
+        InputX val ->
             case String.toFloat val of
                 Ok x ->
                     { model
@@ -185,7 +215,7 @@ update msg model =
                         | err = msg
                     }
 
-        InputD2Y val ->
+        InputY val ->
             case String.toFloat val of
                 Ok y ->
                     { model
@@ -197,7 +227,7 @@ update msg model =
                         | err = msg
                     }
 
-        InputD2Z val ->
+        InputZ val ->
             case String.toFloat val of
                 Ok z ->
                     { model
@@ -208,21 +238,6 @@ update msg model =
                     { model
                         | err = msg
                     }
-
-        CalculateDistance ->
-            { model
-                | dist = Point.dist model.d1 model.d2
-            }
-
-        CopyD1 ->
-            { model
-                | d1 = model.point
-            }
-
-        CopyD2 ->
-            { model
-                | d2 = model.point
-            }
 
 
 
@@ -260,8 +275,6 @@ distanceView model =
                     [ text "Calculate Distance" ]
                 , label [] [ toString model.dist |> (++) "Distance: " |> text ]
                 ]
-
-            --, div [ class "col-1" ]
             ]
         ]
 
@@ -269,20 +282,80 @@ distanceView model =
 distancePoint1View : Point -> Html Msg
 distancePoint1View point =
     div [ class "col-5" ]
-        [ h5 [] [ text "Point 1" ]
-        , formGroup (FormInput "x" "X" InputD1X point.x)
-        , formGroup (FormInput "y" "Y" InputD1Y point.y)
-        , formGroup (FormInput "z" "Z" InputD1Z point.z)
+        [ h5 [] [ text "Point D1" ]
+        , div [ class "form-group row" ]
+            [ label [ for "d1x" ] [ text "X" ]
+            , input
+                [ type_ "text"
+                , onBlurValue (D1Msg << InputX)
+                , value (toString point.x)
+                , class "form-control"
+                , id "d1x"
+                ]
+                []
+            ]
+        , div [ class "form-group row" ]
+            [ label [ for "d1y" ] [ text "Y" ]
+            , input
+                [ type_ "text"
+                , onBlurValue (D1Msg << InputY)
+                , value (toString point.y)
+                , class "form-control"
+                , id "d1y"
+                ]
+                []
+            ]
+        , div [ class "form-group row" ]
+            [ label [ for "d1z" ] [ text "Z" ]
+            , input
+                [ type_ "text"
+                , onBlurValue (D1Msg << InputZ)
+                , value (toString point.z)
+                , class "form-control"
+                , id "d1z"
+                ]
+                []
+            ]
         ]
 
 
 distancePoint2View : Point -> Html Msg
 distancePoint2View point =
     div [ class "col-5" ]
-        [ h5 [] [ text "Point 2" ]
-        , formGroup (FormInput "x" "X" InputD2X point.x)
-        , formGroup (FormInput "y" "Y" InputD2Y point.y)
-        , formGroup (FormInput "z" "Z" InputD2Z point.z)
+        [ h5 [] [ text "Point D2" ]
+        , div [ class "form-group row" ]
+            [ label [ for "d2x" ] [ text "X" ]
+            , input
+                [ type_ "text"
+                , onBlurValue (D2Msg << InputX)
+                , value (toString point.x)
+                , class "form-control"
+                , id "d2x"
+                ]
+                []
+            ]
+        , div [ class "form-group row" ]
+            [ label [ for "d2y" ] [ text "Y" ]
+            , input
+                [ type_ "text"
+                , onBlurValue (D2Msg << InputY)
+                , value (toString point.y)
+                , class "form-control"
+                , id "d2y"
+                ]
+                []
+            ]
+        , div [ class "form-group row" ]
+            [ label [ for "d2z" ] [ text "Z" ]
+            , input
+                [ type_ "text"
+                , onBlurValue (D2Msg << InputZ)
+                , value (toString point.z)
+                , class "form-control"
+                , id "d2z"
+                ]
+                []
+            ]
         ]
 
 
@@ -344,9 +417,39 @@ pointView : Model -> Html Msg
 pointView model =
     div [ class "col-5" ]
         [ h5 [] [ text "3D Point" ]
-        , formGroup (FormInput "x" "X" InputX model.point.x)
-        , formGroup (FormInput "y" "Y" InputY model.point.y)
-        , formGroup (FormInput "z" "Z" InputZ model.point.z)
+        , div [ class "form-group row" ]
+            [ label [ for "px" ] [ text "X" ]
+            , input
+                [ type_ "text"
+                , onBlurValue (PMsg << InputX)
+                , value (toString model.point.x)
+                , class "form-control"
+                , id "px"
+                ]
+                []
+            ]
+        , div [ class "form-group row" ]
+            [ label [ for "py" ] [ text "Y" ]
+            , input
+                [ type_ "text"
+                , onBlurValue (PMsg << InputY)
+                , value (toString model.point.y)
+                , class "form-control"
+                , id "py"
+                ]
+                []
+            ]
+        , div [ class "form-group row" ]
+            [ label [ for "pz" ] [ text "Z" ]
+            , input
+                [ type_ "text"
+                , onBlurValue (PMsg << InputZ)
+                , value (toString model.point.z)
+                , class "form-control"
+                , id "pz"
+                ]
+                []
+            ]
         , div [ class "form-group row" ]
             [ div [ class "col" ]
                 [ button

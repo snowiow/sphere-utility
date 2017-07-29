@@ -1,5 +1,7 @@
 module Point exposing (..)
 
+-- MODEL
+
 
 type alias Point =
     { x : Float
@@ -80,3 +82,13 @@ length point =
             point.z * point.z
     in
         sqrt (qX + qY + qZ)
+
+
+
+-- UPDATE
+
+
+type PointMsg
+    = InputX String
+    | InputY String
+    | InputZ String
