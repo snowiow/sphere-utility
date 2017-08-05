@@ -16,6 +16,7 @@ latlngToPoint latlng =
         { x = cos normalized.lng |> (*) cosphi
         , y = sin normalized.lng |> (*) cosphi
         , z = normalized.lat |> sin
+        , err = ""
         }
 
 

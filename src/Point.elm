@@ -1,5 +1,10 @@
 module Point exposing (..)
 
+import Html exposing (..)
+import Html.Attributes exposing (..)
+import HtmlEvents exposing (..)
+
+
 -- MODEL
 
 
@@ -7,6 +12,7 @@ type alias Point =
     { x : Float
     , y : Float
     , z : Float
+    , err : String
     }
 
 
@@ -15,33 +21,13 @@ initPoint =
     { x = 0
     , y = 0
     , z = 0
+    , err = ""
     }
 
 
 kRadiusOfEarthInMeters : Float
 kRadiusOfEarthInMeters =
     6378.1 * 1000
-
-
-setX : Float -> Point -> Point
-setX x model =
-    { model
-        | x = x
-    }
-
-
-setY : Float -> Point -> Point
-setY y model =
-    { model
-        | y = y
-    }
-
-
-setZ : Float -> Point -> Point
-setZ z model =
-    { model
-        | z = z
-    }
 
 
 dist : Point -> Point -> Float
@@ -61,6 +47,7 @@ crossProd pA pB =
     { x = pA.y * pB.z - pA.z * pB.y
     , y = pA.z * pB.x - pA.x * pB.z
     , z = pA.x * pB.y - pA.y * pB.x
+    , err = ""
     }
 
 
@@ -88,7 +75,74 @@ length point =
 -- UPDATE
 
 
-type PointMsg
+type Msg
     = InputX String
     | InputY String
     | InputZ String
+
+
+update : Msg -> Point -> Point
+update msg point =
+    case msg of
+        InputX val ->
+            case String.toFloat val of
+                Ok x ->
+                    { point | x = x }
+
+                Err msg ->
+                    { point | err = msg }
+
+        InputY val ->
+            case String.toFloat val of
+                Ok y ->
+                    { point | y = y }
+
+                Err msg ->
+                    { point | err = msg }
+
+        InputZ val ->
+            case String.toFloat val of
+                Ok z ->
+                    { point | z = z }
+
+                Err msg ->
+                    { point | err = msg }
+
+
+view : Point -> Html Msg
+view point =
+    div [ class "col-5" ]
+        [ div [ class "form-group row" ]
+            [ label [ for "x" ] [ text "X" ]
+            , input
+                [ type_ "text"
+                , onBlurValue InputX
+                , value (toString point.x)
+                , class "form-control"
+                , id "x"
+                ]
+                []
+            ]
+        , div [ class "form-group row" ]
+            [ label [ for "y" ] [ text "Y" ]
+            , input
+                [ type_ "text"
+                , onBlurValue InputY
+                , value (toString point.y)
+                , class "form-control"
+                , id "y"
+                ]
+                []
+            ]
+        , div [ class "form-group row" ]
+            [ label [ for "z" ] [ text "Z" ]
+            , input
+                [ type_ "text"
+                , onBlurValue InputZ
+                , value (toString point.z)
+                , class "form-control"
+                , id "z"
+                ]
+                []
+            ]
+        ]
