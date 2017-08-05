@@ -31,4 +31,5 @@ pointToLatlng point =
     in
         { lat = qX + qY |> sqrt |> atan2 point.z |> radToDeg
         , lng = atan2 point.y point.x |> radToDeg
+        , err = ""
         }

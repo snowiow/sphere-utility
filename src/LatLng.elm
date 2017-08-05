@@ -1,9 +1,14 @@
 module LatLng exposing (..)
 
+import Html exposing (..)
+import Html.Attributes exposing (type_, value, class, id, for)
+import HtmlEvents exposing (..)
+
 
 type alias LatLng =
     { lat : Float
     , lng : Float
+    , err : String
     }
 
 
@@ -11,20 +16,7 @@ initLatLng : LatLng
 initLatLng =
     { lat = 0
     , lng = 0
-    }
-
-
-setLat : Float -> LatLng -> LatLng
-setLat lat model =
-    { model
-        | lat = lat
-    }
-
-
-setLng : Float -> LatLng -> LatLng
-setLng lng model =
-    { model
-        | lng = lng
+    , err = ""
     }
 
 
@@ -93,4 +85,63 @@ normalize latlng =
     in
         { lat = max -pi2 minPiLat
         , lng = ieeeReminder (degToRad latlng.lng) (2 * pi)
+        , err = ""
         }
+
+
+
+-- UPDATE
+
+
+type Msg
+    = InputLat String
+    | InputLng String
+
+
+update : Msg -> LatLng -> LatLng
+update msg latlng =
+    case msg of
+        InputLat val ->
+            case parseLat val of
+                Ok lat ->
+                    { latlng | lat = lat }
+
+                Err msg ->
+                    { latlng | err = msg }
+
+        InputLng val ->
+            case parseLng val of
+                Ok lng ->
+                    { latlng | lng = lng }
+
+                Err msg ->
+                    { latlng | err = msg }
+
+
+view : LatLng -> Html Msg
+view latlng =
+    div [ class "col-5" ]
+        [ h5 [ class "error" ] [ text latlng.err ]
+        , div [ class "form-group row" ]
+            [ label [ for "lat" ] [ text "Latitude" ]
+            , input
+                [ type_ "text"
+                , onBlurValue InputLat
+                , value (toString latlng.lat)
+                , class "form-control"
+                , id "lat"
+                ]
+                []
+            ]
+        , div [ class "form-group row" ]
+            [ label [ for "lng" ] [ text "Longitude" ]
+            , input
+                [ type_ "text"
+                , onBlurValue InputLng
+                , value (toString latlng.lng)
+                , class "form-control"
+                , id "lng"
+                ]
+                []
+            ]
+        ]

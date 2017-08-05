@@ -1,7 +1,7 @@
 module Point exposing (..)
 
 import Html exposing (..)
-import Html.Attributes exposing (..)
+import Html.Attributes exposing (type_, value, class, id, for)
 import HtmlEvents exposing (..)
 
 
@@ -112,7 +112,8 @@ update msg point =
 view : Point -> Html Msg
 view point =
     div [ class "col-5" ]
-        [ div [ class "form-group row" ]
+        [ h5 [ class "error" ] [ text point.err ]
+        , div [ class "form-group row" ]
             [ label [ for "x" ] [ text "X" ]
             , input
                 [ type_ "text"

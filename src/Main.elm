@@ -4,7 +4,6 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Sphere exposing (..)
-import HtmlEvents exposing (..)
 import Point exposing (..)
 import LatLng exposing (..)
 
@@ -18,15 +17,6 @@ type alias Model =
     , d1 : Point
     , d2 : Point
     , dist : Float
-    , err : String
-    }
-
-
-type alias FormInput =
-    { id : String
-    , text : String
-    , msg : String -> Msg
-    , val : Float
     }
 
 
@@ -37,7 +27,6 @@ initModel =
     , d1 = initPoint
     , d2 = initPoint
     , dist = 0
-    , err = ""
     }
 
 
@@ -48,11 +37,10 @@ initModel =
 type Msg
     = ConvertLatLng
     | ConvertPoint
-    | InputLat String
-    | InputLng String
     | CalculateDistance
     | CopyD1
     | CopyD2
+    | LatLngMsg LatLng.Msg
     | PMsg Point.Msg
     | D1Msg Point.Msg
     | D2Msg Point.Msg
@@ -67,21 +55,8 @@ update msg model =
         ConvertPoint ->
             { model | latlng = pointToLatlng model.point }
 
-        InputLat val ->
-            case parseLat val of
-                Ok lat ->
-                    { model | latlng = setLat lat model.latlng }
-
-                Err msg ->
-                    { model | err = msg }
-
-        InputLng val ->
-            case parseLng val of
-                Ok lng ->
-                    { model | latlng = setLng lng model.latlng }
-
-                Err msg ->
-                    { model | err = msg }
+        LatLngMsg subMsg ->
+            { model | latlng = LatLng.update subMsg model.latlng }
 
         PMsg subMsg ->
             { model | point = Point.update subMsg model.point }
@@ -163,9 +138,7 @@ conversionView model =
         [ div [ class "row" ]
             [ div [ class "col-2" ] []
             , div [ class "col-8" ]
-                [ h2 [ class "title" ] [ text "Convert Point to LatLng/ LatLng to Point" ]
-                , h5 [ class "error" ] [ text model.err ]
-                ]
+                [ h2 [ class "title" ] [ text "Convert Point to LatLng/ LatLng to Point" ] ]
             , div [ class "col-2" ] []
             ]
         , div [ class "row" ]
@@ -177,27 +150,11 @@ conversionView model =
         ]
 
 
-formGroup : FormInput -> Html Msg
-formGroup formInput =
-    div [ class "form-group row" ]
-        [ label [ for formInput.id ] [ text formInput.text ]
-        , input
-            [ type_ "text"
-            , onBlurValue formInput.msg
-            , value (toString formInput.val)
-            , class "form-control"
-            , id "lat"
-            ]
-            []
-        ]
-
-
 latlngView : Model -> Html Msg
 latlngView model =
     div [ class "col-5" ]
         [ h5 [] [ text "Latitude/Longitude in Degrees" ]
-        , formGroup (FormInput "lat" "Latitude" InputLat model.latlng.lat)
-        , formGroup (FormInput "lng" "Longitude" InputLng model.latlng.lng)
+        , Html.map LatLngMsg (LatLng.view model.latlng)
         , div [ class "form-group row" ]
             [ div [ class "col" ]
                 [ button
