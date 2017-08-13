@@ -6,26 +6,29 @@ import Html.Events exposing (..)
 import Sphere exposing (..)
 import Point exposing (..)
 import LatLng exposing (..)
+import Bootstrap.Grid as Grid
+import Bootstrap.Grid.Row as Row
+import Bootstrap.Grid.Col as Col
 
 
 -- MODEL
 
 
 type alias Model =
-    { point : Point
-    , latlng : LatLng
-    , d1 : Point
-    , d2 : Point
+    { point : Point.Model
+    , latlng : LatLng.Model
+    , d1 : Point.Model
+    , d2 : Point.Model
     , dist : Float
     }
 
 
 initModel : Model
 initModel =
-    { latlng = initLatLng
-    , point = initPoint
-    , d1 = initPoint
-    , d2 = initPoint
+    { latlng = LatLng.init
+    , point = Point.initModel
+    , d1 = Point.initModel
+    , d2 = Point.initModel
     , dist = 0
     }
 
@@ -50,10 +53,10 @@ update : Msg -> Model -> Model
 update msg model =
     case msg of
         ConvertLatLng ->
-            { model | point = latlngToPoint model.latlng }
+            { model | point = latlngToPointOnModels model.latlng }
 
         ConvertPoint ->
-            { model | latlng = pointToLatlng model.point }
+            { model | latlng = pointToLatLngOnModels model.point }
 
         LatLngMsg subMsg ->
             { model | latlng = LatLng.update subMsg model.latlng }
@@ -68,7 +71,7 @@ update msg model =
             { model | d2 = Point.update subMsg model.d2 }
 
         CalculateDistance ->
-            { model | dist = Point.dist model.d1 model.d2 }
+            { model | dist = Point.distOnModels model.d1 model.d2 }
 
         CopyD1 ->
             { model | d1 = model.point }
@@ -92,18 +95,18 @@ view model =
 distanceView : Model -> Html Msg
 distanceView model =
     div []
-        [ div [ class "row" ]
-            [ div [ class "col-2" ] []
-            , div [ class "col-8" ]
+        [ Grid.row []
+            [ Grid.col [ Col.xs2 ] []
+            , Grid.col [ Col.xs8 ]
                 [ h2 [ class "title" ] [ text "Calculate distance between two points" ] ]
-            , div [ class "col-2" ] []
+            , Grid.col [ Col.xs2 ] []
             ]
-        , div [ class "row" ]
-            [ div [ class "col-5" ]
+        , Grid.row []
+            [ Grid.col [ Col.xs5 ]
                 [ distancePoint1View model.d1 ]
-            , div [ class "col-5" ]
+            , Grid.col [ Col.xs5 ]
                 [ distancePoint2View model.d2 ]
-            , div [ class "col-1" ]
+            , Grid.col [ Col.xs2 ]
                 [ button
                     [ type_ "button"
                     , onClick CalculateDistance
@@ -113,10 +116,11 @@ distanceView model =
                 , label [] [ toString model.dist |> (++) "Distance: " |> text ]
                 ]
             ]
+        , Grid.row [] []
         ]
 
 
-distancePoint1View : Point -> Html Msg
+distancePoint1View : Point.Model -> Html Msg
 distancePoint1View point =
     div []
         [ h5 [] [ text "Point D1" ]
@@ -124,7 +128,7 @@ distancePoint1View point =
         ]
 
 
-distancePoint2View : Point -> Html Msg
+distancePoint2View : Point.Model -> Html Msg
 distancePoint2View point =
     div []
         [ h5 [] [ text "Point D2" ]
@@ -135,28 +139,28 @@ distancePoint2View point =
 conversionView : Model -> Html Msg
 conversionView model =
     div []
-        [ div [ class "row" ]
-            [ div [ class "col-2" ] []
-            , div [ class "col-8" ]
+        [ Grid.row []
+            [ Grid.col [ Col.xs2 ] []
+            , Grid.col [ Col.xs8 ]
                 [ h2 [ class "title" ] [ text "Convert Point to LatLng/ LatLng to Point" ] ]
-            , div [ class "col-2" ] []
+            , Grid.col [ Col.xs2 ] []
             ]
-        , div [ class "row" ]
+        , Grid.row []
             [ latlngView model
-            , div [ class "col-2" ]
+            , Grid.col [ Col.xs2 ]
                 []
             , pointView model
             ]
         ]
 
 
-latlngView : Model -> Html Msg
+latlngView : Model -> Grid.Column Msg
 latlngView model =
-    div [ class "col-5" ]
+    Grid.col [ Col.xs5 ]
         [ h5 [] [ text "Latitude/Longitude in Degrees" ]
         , Html.map LatLngMsg (LatLng.view model.latlng)
-        , div [ class "form-group row" ]
-            [ div [ class "col" ]
+        , Grid.row []
+            [ Grid.col []
                 [ button
                     [ type_ "button"
                     , onClick ConvertLatLng
@@ -168,13 +172,13 @@ latlngView model =
         ]
 
 
-pointView : Model -> Html Msg
+pointView : Model -> Grid.Column Msg
 pointView model =
-    div [ class "col-5" ]
+    Grid.col [ Col.xs5 ]
         [ h5 [] [ text "Point" ]
         , Html.map PMsg (Point.view model.point)
-        , div [ class "form-group row" ]
-            [ div [ class "col" ]
+        , Grid.row []
+            [ Grid.col []
                 [ button
                     [ type_ "button"
                     , onClick ConvertPoint
@@ -182,7 +186,7 @@ pointView model =
                     ]
                     [ text "Convert to Latitude/Longitude" ]
                 ]
-            , div [ class "col" ]
+            , Grid.col []
                 [ button
                     [ type_ "button"
                     , onClick CopyD1

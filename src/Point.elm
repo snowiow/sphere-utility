@@ -1,33 +1,101 @@
 module Point exposing (..)
 
 import Html exposing (..)
-import Html.Attributes exposing (type_, value, class, id, for)
-import HtmlEvents exposing (..)
+import Html.Attributes exposing (class, for, pattern)
+import Bootstrap.Grid as Grid
+import Bootstrap.Grid.Col as Col
+import Bootstrap.Form as Form
+import Bootstrap.Form.Input as Input
+import FloatInput exposing (FloatInput)
 
 
 -- MODEL
+
+
+type alias Model =
+    { x : FloatInput
+    , y : FloatInput
+    , z : FloatInput
+    }
 
 
 type alias Point =
     { x : Float
     , y : Float
     , z : Float
-    , err : String
+    }
+
+
+initModel : Model
+initModel =
+    { x = FloatInput.init
+    , y = FloatInput.init
+    , z = FloatInput.init
     }
 
 
 initPoint : Point
 initPoint =
-    { x = 0
-    , y = 0
-    , z = 0
-    , err = ""
+    { x = 0.0
+    , y = 0.0
+    , z = 0.0
+    }
+
+
+modelToPoint : Model -> Point
+modelToPoint model =
+    { x =
+        case model.x.number of
+            Just number ->
+                number
+
+            Nothing ->
+                0
+    , y =
+        case model.y.number of
+            Just number ->
+                number
+
+            Nothing ->
+                0
+    , z =
+        case model.z.number of
+            Just number ->
+                number
+
+            Nothing ->
+                0
+    }
+
+
+pointToModel : Point -> Model
+pointToModel point =
+    { x =
+        { number = Just point.x
+        , input = toString point.x
+        , err = ""
+        }
+    , y =
+        { number = Just point.y
+        , input = toString point.y
+        , err = ""
+        }
+    , z =
+        { number = Just point.z
+        , input = toString point.z
+        , err = ""
+        }
     }
 
 
 kRadiusOfEarthInMeters : Float
 kRadiusOfEarthInMeters =
     6378.1 * 1000
+
+
+distOnModels : Model -> Model -> Float
+distOnModels mA mB =
+    dist (modelToPoint mA) (modelToPoint mB)
 
 
 dist : Point -> Point -> Float
@@ -47,7 +115,6 @@ crossProd pA pB =
     { x = pA.y * pB.z - pA.z * pB.y
     , y = pA.z * pB.x - pA.x * pB.z
     , z = pA.x * pB.y - pA.y * pB.x
-    , err = ""
     }
 
 
@@ -81,69 +148,66 @@ type Msg
     | InputZ String
 
 
-update : Msg -> Point -> Point
-update msg point =
+update : Msg -> Model -> Model
+update msg model =
     case msg of
         InputX val ->
-            case String.toFloat val of
-                Ok x ->
-                    { point | x = x }
-
-                Err msg ->
-                    { point | err = msg }
+            { model | x = FloatInput.parse val }
 
         InputY val ->
-            case String.toFloat val of
-                Ok y ->
-                    { point | y = y }
-
-                Err msg ->
-                    { point | err = msg }
+            { model | y = FloatInput.parse val }
 
         InputZ val ->
-            case String.toFloat val of
-                Ok z ->
-                    { point | z = z }
-
-                Err msg ->
-                    { point | err = msg }
+            { model | z = FloatInput.parse val }
 
 
-view : Point -> Html Msg
-view point =
-    div [ class "col-5" ]
-        [ h5 [ class "error" ] [ text point.err ]
-        , div [ class "form-group row" ]
-            [ label [ for "x" ] [ text "X" ]
-            , input
-                [ type_ "text"
-                , onBlurValue InputX
-                , value (toString point.x)
-                , class "form-control"
-                , id "x"
+view : Model -> Html Msg
+view model =
+    Grid.row []
+        [ Grid.col [ Col.xs5 ]
+            [ Form.form []
+                [ Form.group
+                    (if String.isEmpty model.x.err then
+                        []
+                     else
+                        [ Form.groupDanger ]
+                    )
+                    [ Form.label [ for "x" ] [ text "X" ]
+                    , Input.text
+                        [ Input.onInput InputX
+                        , Input.value model.x.input
+                        , Input.id "x"
+                        ]
+                    , Form.validationText [] [ text model.x.err ]
+                    ]
+                , Form.group
+                    (if String.isEmpty model.y.err then
+                        []
+                     else
+                        [ Form.groupDanger ]
+                    )
+                    [ Form.label [ for "y" ] [ text "Y" ]
+                    , Input.text
+                        [ Input.onInput InputY
+                        , Input.value model.y.input
+                        , Input.id "y"
+                        ]
+                    , Form.validationText [] [ text model.y.err ]
+                    ]
+                , Form.group
+                    (if String.isEmpty model.z.err then
+                        []
+                     else
+                        [ Form.groupDanger ]
+                    )
+                    [ Form.label [ for "z" ] [ text "Z" ]
+                    , Input.text
+                        [ Input.onInput InputZ
+                        , Input.value model.z.input
+                        , Input.id "z"
+                        ]
+                    , Form.validationText [] [ text model.z.err ]
+                    ]
                 ]
-                []
-            ]
-        , div [ class "form-group row" ]
-            [ label [ for "y" ] [ text "Y" ]
-            , input
-                [ type_ "text"
-                , onBlurValue InputY
-                , value (toString point.y)
-                , class "form-control"
-                , id "y"
-                ]
-                []
-            ]
-        , div [ class "form-group row" ]
-            [ label [ for "z" ] [ text "Z" ]
-            , input
-                [ type_ "text"
-                , onBlurValue InputZ
-                , value (toString point.z)
-                , class "form-control"
-                , id "z"
-                ]
-                []
             ]
         ]

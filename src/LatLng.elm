@@ -2,13 +2,29 @@ module LatLng exposing (..)
 
 import Html exposing (..)
 import Html.Attributes exposing (type_, value, class, id, for)
-import HtmlEvents exposing (..)
+import FloatInput exposing (FloatInput)
+import Bootstrap.Grid as Grid
+import Bootstrap.Grid.Col as Col
+import Bootstrap.Form as Form
+import Bootstrap.Form.Input as Input
+
+
+type alias Model =
+    { lat : FloatInput
+    , lng : FloatInput
+    }
 
 
 type alias LatLng =
     { lat : Float
     , lng : Float
-    , err : String
+    }
+
+
+init : Model
+init =
+    { lat = FloatInput.init
+    , lng = FloatInput.init
     }
 
 
@@ -16,7 +32,40 @@ initLatLng : LatLng
 initLatLng =
     { lat = 0
     , lng = 0
-    , err = ""
+    }
+
+
+modelToLatLng : Model -> LatLng
+modelToLatLng model =
+    { lat =
+        case model.lat.number of
+            Just number ->
+                number
+
+            Nothing ->
+                0
+    , lng =
+        case model.lng.number of
+            Just number ->
+                number
+
+            Nothing ->
+                0
+    }
+
+
+latLngToModel : LatLng -> Model
+latLngToModel latlng =
+    { lat =
+        { number = Just latlng.lat
+        , input = toString latlng.lat
+        , err = ""
+        }
+    , lng =
+        { number = Just latlng.lng
+        , input = toString latlng.lng
+        , err = ""
+        }
     }
 
 
@@ -85,7 +134,6 @@ normalize latlng =
     in
         { lat = max -pi2 minPiLat
         , lng = ieeeReminder (degToRad latlng.lng) (2 * pi)
-        , err = ""
         }
 
 
@@ -98,50 +146,49 @@ type Msg
     | InputLng String
 
 
-update : Msg -> LatLng -> LatLng
-update msg latlng =
+update : Msg -> Model -> Model
+update msg model =
     case msg of
         InputLat val ->
-            case parseLat val of
-                Ok lat ->
-                    { latlng | lat = lat }
-
-                Err msg ->
-                    { latlng | err = msg }
+            { model | lat = FloatInput.parse val }
 
         InputLng val ->
-            case parseLng val of
-                Ok lng ->
-                    { latlng | lng = lng }
-
-                Err msg ->
-                    { latlng | err = msg }
+            { model | lng = FloatInput.parse val }
 
 
-view : LatLng -> Html Msg
-view latlng =
-    div [ class "col-5" ]
-        [ h5 [ class "error" ] [ text latlng.err ]
-        , div [ class "form-group row" ]
-            [ label [ for "lat" ] [ text "Latitude" ]
-            , input
-                [ type_ "text"
-                , onBlurValue InputLat
-                , value (toString latlng.lat)
-                , class "form-control"
-                , id "lat"
+view : Model -> Html Msg
+view model =
+    Grid.row []
+        [ Grid.col [ Col.xs5 ]
+            [ Form.form []
+                [ Form.group
+                    (if String.isEmpty model.lat.err then
+                        []
+                     else
+                        [ Form.groupDanger ]
+                    )
+                    [ Form.label [ for "lat" ] [ text "Latitude" ]
+                    , Input.text
+                        [ Input.onInput InputLat
+                        , Input.value model.lat.input
+                        , Input.id "lat"
+                        ]
+                    , Form.validationText [] [ text model.lat.err ]
+                    ]
+                , Form.group
+                    (if String.isEmpty model.lng.err then
+                        []
+                     else
+                        [ Form.groupDanger ]
+                    )
+                    [ Form.label [ for "lng" ] [ text "Longitude" ]
+                    , Input.text
+                        [ Input.onInput InputLng
+                        , Input.value model.lng.input
+                        , Input.id "lng"
+                        ]
+                    , Form.validationText [] [ text model.lng.err ]
+                    ]
                 ]
-                []
-            ]
-        , div [ class "form-group row" ]
-            [ label [ for "lng" ] [ text "Longitude" ]
-            , input
-                [ type_ "text"
-                , onBlurValue InputLng
-                , value (toString latlng.lng)
-                , class "form-control"
-                , id "lng"
-                ]
-                []
             ]
         ]
