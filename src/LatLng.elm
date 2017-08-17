@@ -69,37 +69,6 @@ latLngToModel latlng =
     }
 
 
-parseLat : String -> Result String Float
-parseLat str =
-    parseVal str 90 "latitude"
-
-
-parseLng : String -> Result String Float
-parseLng str =
-    parseVal str 180 "longitude"
-
-
-parseVal : String -> Float -> String -> Result String Float
-parseVal str border name =
-    case String.toFloat str of
-        Ok float ->
-            if float >= -border && float <= border then
-                Ok float
-            else
-                Err
-                    ("Illegal value for "
-                        ++ name
-                        ++ " given (only between -"
-                        ++ (toString border)
-                        ++ " to "
-                        ++ (toString border)
-                        ++ " allowed)"
-                    )
-
-        Err msg ->
-            Err msg
-
-
 degToRad : Float -> Float
 degToRad deg =
     let
@@ -150,10 +119,10 @@ update : Msg -> Model -> Model
 update msg model =
     case msg of
         InputLat val ->
-            { model | lat = FloatInput.parse val }
+            { model | lat = FloatInput.parseLat val }
 
         InputLng val ->
-            { model | lng = FloatInput.parse val }
+            { model | lng = FloatInput.parseLng val }
 
 
 view : Model -> Html Msg

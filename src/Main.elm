@@ -2,13 +2,13 @@ module Main exposing (..)
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
-import Html.Events exposing (..)
 import Sphere exposing (..)
 import Point exposing (..)
 import LatLng exposing (..)
 import Bootstrap.Grid as Grid
-import Bootstrap.Grid.Row as Row
 import Bootstrap.Grid.Col as Col
+import Bootstrap.Button as Button
+import Bootstrap.ButtonGroup as ButtonGroup
 
 
 -- MODEL
@@ -88,6 +88,7 @@ view : Model -> Html Msg
 view model =
     div [ class "container" ]
         [ conversionView model
+        , br [] []
         , distanceView model
         ]
 
@@ -107,10 +108,9 @@ distanceView model =
             , Grid.col [ Col.xs5 ]
                 [ distancePoint2View model.d2 ]
             , Grid.col [ Col.xs2 ]
-                [ button
-                    [ type_ "button"
-                    , onClick CalculateDistance
-                    , class "btn btn-primary"
+                [ Button.button
+                    [ Button.primary
+                    , Button.onClick CalculateDistance
                     ]
                     [ text "Calculate Distance" ]
                 , label [] [ toString model.dist |> (++) "Distance: " |> text ]
@@ -161,10 +161,9 @@ latlngView model =
         , Html.map LatLngMsg (LatLng.view model.latlng)
         , Grid.row []
             [ Grid.col []
-                [ button
-                    [ type_ "button"
-                    , onClick ConvertLatLng
-                    , class "btn btn-primary"
+                [ Button.button
+                    [ Button.primary
+                    , Button.onClick ConvertLatLng
                     ]
                     [ text "Convert to Point" ]
                 ]
@@ -179,26 +178,23 @@ pointView model =
         , Html.map PMsg (Point.view model.point)
         , Grid.row []
             [ Grid.col []
-                [ button
-                    [ type_ "button"
-                    , onClick ConvertPoint
-                    , class "btn btn-primary"
+                [ ButtonGroup.buttonGroup [ ButtonGroup.vertical ]
+                    [ ButtonGroup.button
+                        [ Button.primary
+                        , Button.onClick ConvertPoint
+                        ]
+                        [ text "Convert to Latitude/Longitude" ]
+                    , ButtonGroup.button
+                        [ Button.primary
+                        , Button.onClick CopyD1
+                        ]
+                        [ text "Copy point into D1" ]
+                    , ButtonGroup.button
+                        [ Button.primary
+                        , Button.onClick CopyD2
+                        ]
+                        [ text "Copy Point into D2" ]
                     ]
-                    [ text "Convert to Latitude/Longitude" ]
-                ]
-            , Grid.col []
-                [ button
-                    [ type_ "button"
-                    , onClick CopyD1
-                    , class "btn btn-primary margin"
-                    ]
-                    [ text "Copy point into D1" ]
-                , button
-                    [ type_ "button"
-                    , onClick CopyD2
-                    , class "btn btn-primary margin"
-                    ]
-                    [ text "Copy Point into D2" ]
                 ]
             ]
         ]
