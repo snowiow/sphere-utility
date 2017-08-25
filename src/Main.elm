@@ -5,18 +5,22 @@ import Html.Attributes exposing (..)
 import Sphere exposing (..)
 import Point exposing (..)
 import LatLng exposing (..)
+import UrlParser exposing ((</>))
 import Bootstrap.Grid as Grid
 import Bootstrap.Grid.Col as Col
 import Bootstrap.Button as Button
 import Bootstrap.ButtonGroup as ButtonGroup
 import Bootstrap.Navbar as Navbar
+import Navigation exposing (Location)
 
 
 -- MODEL
 
 
 type alias Model =
-    { point : Point.Model
+    { navState : Navbar.State
+    , page : Page
+    , point : Point.Model
     , latlng : LatLng.Model
     , d1 : Point.Model
     , d2 : Point.Model
@@ -24,14 +28,24 @@ type alias Model =
     }
 
 
-initModel : Model
-initModel =
-    { latlng = LatLng.init
-    , point = Point.initModel
-    , d1 = Point.initModel
-    , d2 = Point.initModel
-    , dist = 0
-    }
+init : Location -> ( Model, Cmd Msg )
+init location =
+    let
+        ( navState, navCmd ) =
+            Navbar.initialState NavMsg
+
+        ( model, urlCmd ) =
+            urlUpdate location
+                { navState = navState
+                , page = Distance
+                , latlng = LatLng.init
+                , point = Point.initModel
+                , d1 = Point.initModel
+                , d2 = Point.initModel
+                , dist = 0
+                }
+    in
+        ( model, Cmd.batch [ urlCmd, navCmd ] )
 
 
 
@@ -48,6 +62,19 @@ type Msg
     | PMsg Point.Msg
     | D1Msg Point.Msg
     | D2Msg Point.Msg
+    | NavMsg Navbar.State
+    | UrlChange Location
+
+
+type Page
+    = Distance
+    | Maps
+    | NotFound
+
+
+subscriptions : Model -> Sub Msg
+subscriptions model =
+    Navbar.subscriptions model.navState NavMsg
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -80,6 +107,35 @@ update msg model =
         CopyD2 ->
             ( { model | d2 = model.point }, Cmd.none )
 
+        NavMsg state ->
+            ( { model | navState = state }, Cmd.none )
+
+        UrlChange location ->
+            urlUpdate location model
+
+
+urlUpdate : Navigation.Location -> Model -> ( Model, Cmd Msg )
+urlUpdate location model =
+    case decode location of
+        Nothing ->
+            ( { model | page = NotFound }, Cmd.none )
+
+        Just route ->
+            ( { model | page = route }, Cmd.none )
+
+
+decode : Location -> Maybe Page
+decode location =
+    UrlParser.parseHash routeParser location
+
+
+routeParser : UrlParser.Parser (Page -> a) a
+routeParser =
+    UrlParser.oneOf
+        [ UrlParser.map Distance UrlParser.top
+        , UrlParser.map Maps (UrlParser.s "maps")
+        ]
+
 
 
 -- VIEW
@@ -87,28 +143,84 @@ update msg model =
 
 view : Model -> Html Msg
 view model =
-    div [ class "container" ]
-        [ conversionView model
-        , br [] []
-        , distanceView model
+    div []
+        [ navView model
+        , mainContent model
         ]
+
+
+navView : Model -> Html Msg
+navView model =
+    Navbar.config NavMsg
+        |> Navbar.withAnimation
+        |> Navbar.container
+        |> Navbar.brand
+            [ href "#" ]
+            [ img
+                [ src "assets/favicon.ico"
+                , class "d-inline-block align-top"
+                , style [ ( "width", "30px" ) ]
+                ]
+                []
+            , text "Sphere Utilities"
+            ]
+        |> Navbar.items
+            [ Navbar.itemLink [ href "#" ] [ text "Distance" ]
+            , Navbar.itemLink [ href "#maps" ] [ text "Maps" ]
+            ]
+        |> Navbar.view model.navState
+
+
+mainContent : Model -> Html Msg
+mainContent model =
+    Grid.container [] <|
+        case model.page of
+            Distance ->
+                pageDistance model
+
+            Maps ->
+                pageMaps model
+
+            NotFound ->
+                pageNotFound
+
+
+pageDistance : Model -> List (Html Msg)
+pageDistance model =
+    [ conversionView model
+    , br [] []
+    , distanceView model
+    ]
+
+
+pageMaps : Model -> List (Html Msg)
+pageMaps model =
+    [ div []
+        [ h2 [] [ text "Hello World" ]
+        ]
+    ]
+
+
+pageNotFound : List (Html Msg)
+pageNotFound =
+    [ h1 [] [ text "Not found" ]
+    , text "Sorry this page couldn't be found"
+    ]
 
 
 distanceView : Model -> Html Msg
 distanceView model =
     div []
         [ Grid.row []
-            [ Grid.col [ Col.xs2 ] []
-            , Grid.col [ Col.xs8 ]
+            [ Grid.col []
                 [ h2 [ class "title" ] [ text "Calculate distance between two points" ] ]
-            , Grid.col [ Col.xs2 ] []
             ]
         , Grid.row []
             [ Grid.col [ Col.xs5 ]
                 [ distancePoint1View model.d1 ]
             , Grid.col [ Col.xs5 ]
                 [ distancePoint2View model.d2 ]
-            , Grid.col [ Col.xs2 ]
+            , Grid.col [ Col.xs1 ]
                 [ Button.button
                     [ Button.primary
                     , Button.onClick CalculateDistance
@@ -117,7 +229,6 @@ distanceView model =
                 , label [] [ toString model.dist |> (++) "Distance: " |> text ]
                 ]
             ]
-        , Grid.row [] []
         ]
 
 
@@ -141,10 +252,8 @@ conversionView : Model -> Html Msg
 conversionView model =
     div []
         [ Grid.row []
-            [ Grid.col [ Col.xs2 ] []
-            , Grid.col [ Col.xs8 ]
+            [ Grid.col [ Col.xs8 ]
                 [ h2 [ class "title" ] [ text "Convert Point to LatLng/ LatLng to Point" ] ]
-            , Grid.col [ Col.xs2 ] []
             ]
         , Grid.row []
             [ latlngView model
@@ -203,9 +312,9 @@ pointView model =
 
 main : Program Never Model Msg
 main =
-    Html.program
-        { init = ( initModel, Cmd.none )
+    Navigation.program UrlChange
+        { init = init
         , update = update
         , view = view
-        , subscriptions = (\model -> Sub.none)
+        , subscriptions = subscriptions
         }
