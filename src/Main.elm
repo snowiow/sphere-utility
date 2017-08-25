@@ -9,6 +9,7 @@ import Bootstrap.Grid as Grid
 import Bootstrap.Grid.Col as Col
 import Bootstrap.Button as Button
 import Bootstrap.ButtonGroup as ButtonGroup
+import Bootstrap.Navbar as Navbar
 
 
 -- MODEL
@@ -49,35 +50,35 @@ type Msg
     | D2Msg Point.Msg
 
 
-update : Msg -> Model -> Model
+update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         ConvertLatLng ->
-            { model | point = latlngToPointOnModels model.latlng }
+            ( { model | point = latlngToPointOnModels model.latlng }, Cmd.none )
 
         ConvertPoint ->
-            { model | latlng = pointToLatLngOnModels model.point }
+            ( { model | latlng = pointToLatLngOnModels model.point }, Cmd.none )
 
         LatLngMsg subMsg ->
-            { model | latlng = LatLng.update subMsg model.latlng }
+            ( { model | latlng = LatLng.update subMsg model.latlng }, Cmd.none )
 
         PMsg subMsg ->
-            { model | point = Point.update subMsg model.point }
+            ( { model | point = Point.update subMsg model.point }, Cmd.none )
 
         D1Msg subMsg ->
-            { model | d1 = Point.update subMsg model.d1 }
+            ( { model | d1 = Point.update subMsg model.d1 }, Cmd.none )
 
         D2Msg subMsg ->
-            { model | d2 = Point.update subMsg model.d2 }
+            ( { model | d2 = Point.update subMsg model.d2 }, Cmd.none )
 
         CalculateDistance ->
-            { model | dist = Point.distOnModels model.d1 model.d2 }
+            ( { model | dist = Point.distOnModels model.d1 model.d2 }, Cmd.none )
 
         CopyD1 ->
-            { model | d1 = model.point }
+            ( { model | d1 = model.point }, Cmd.none )
 
         CopyD2 ->
-            { model | d2 = model.point }
+            ( { model | d2 = model.point }, Cmd.none )
 
 
 
@@ -202,8 +203,9 @@ pointView model =
 
 main : Program Never Model Msg
 main =
-    Html.beginnerProgram
-        { model = initModel
+    Html.program
+        { init = ( initModel, Cmd.none )
         , update = update
         , view = view
+        , subscriptions = (\model -> Sub.none)
         }
