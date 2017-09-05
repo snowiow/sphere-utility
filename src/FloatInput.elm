@@ -1,4 +1,4 @@
-module FloatInput exposing (..)
+module FloatInput exposing (FloatInput, init, parse, parseLat, parseLng)
 
 
 type alias FloatInput =

@@ -26,8 +26,8 @@ type alias Point =
     }
 
 
-initModel : Model
-initModel =
+init : Model
+init =
     { x = FloatInput.init
     , y = FloatInput.init
     , z = FloatInput.init
