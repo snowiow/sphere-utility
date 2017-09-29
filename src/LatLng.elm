@@ -128,7 +128,7 @@ update msg model =
 view : Model -> Html Msg
 view model =
     Grid.row []
-        [ Grid.col [ Col.xs5 ]
+        [ Grid.col []
             [ Form.form []
                 [ Form.group
                     (if String.isEmpty model.lat.err then

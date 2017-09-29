@@ -9,9 +9,23 @@
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css" integrity="sha384-rwoIResjU2yc3z8GV/NPeZWAv56rSmLldC3R/AZzGRnGxQQKnKkoFVhFQhNUwEyJ" crossorigin="anonymous">
   </head>
   <body>
+    <div id="elm-area"></div>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDG4-TeEQEyo0LUZ1afSPA1R_mm4B2aP1o"
+    async defer></script>
     <script src="bundle.js"></script>
     <script>
-      var app = Elm.Main.fullscreen();
+      var app = Elm.Main.embed(document.getElementById("elm-area"));
+      app.ports.setPoint.subscribe(function(point) {
+        var map = new google.maps.Map(document.getElementById('map'), {
+          zoom: 5,
+          center: point,
+          mapTypeId: 'terrain'
+        });
+        var marker = new google.maps.Marker({
+          position: point,
+          map: map,
+        });
+      });
     </script>
   </body>
 </html>

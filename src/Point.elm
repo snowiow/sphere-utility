@@ -3,7 +3,6 @@ module Point exposing (..)
 import Html exposing (..)
 import Html.Attributes exposing (class, for, pattern)
 import Bootstrap.Grid as Grid
-import Bootstrap.Grid.Col as Col
 import Bootstrap.Form as Form
 import Bootstrap.Form.Input as Input
 import FloatInput exposing (FloatInput)
@@ -164,7 +163,7 @@ update msg model =
 view : Model -> Html Msg
 view model =
     Grid.row []
-        [ Grid.col [ Col.xs5 ]
+        [ Grid.col []
             [ Form.form []
                 [ Form.group
                     (if String.isEmpty model.x.err then

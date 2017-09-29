@@ -1,12 +1,19 @@
-module Main exposing (..)
+port module Main exposing (..)
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
+import Bootstrap.Grid.Col as Col
 import UrlParser exposing ((</>))
+import Bootstrap.Button as Button
 import Bootstrap.Grid as Grid
 import Bootstrap.Navbar as Navbar
 import Navigation exposing (Location)
 import DistancePage
+import LatLng
+
+
+port setPoint : LatLng.LatLng -> Cmd msg
+
 
 
 -- MODEL
@@ -16,6 +23,7 @@ type alias Model =
     { navState : Navbar.State
     , page : Page
     , distancePage : DistancePage.Model
+    , point : LatLng.Model
     }
 
 
@@ -30,6 +38,7 @@ init location =
                 { navState = navState
                 , page = Distance
                 , distancePage = DistancePage.init
+                , point = LatLng.init
                 }
     in
         ( model, Cmd.batch [ urlCmd, navCmd ] )
@@ -43,6 +52,8 @@ type Msg
     = NavMsg Navbar.State
     | UrlChange Location
     | DistancePage DistancePage.Msg
+    | LatLngMsg LatLng.Msg
+    | ShowPoint
 
 
 type Page
@@ -72,6 +83,12 @@ update msg model =
               }
             , Cmd.none
             )
+
+        LatLngMsg subMsg ->
+            ( { model | point = LatLng.update subMsg model.point }, Cmd.none )
+
+        ShowPoint ->
+            ( model, setPoint (LatLng.modelToLatLng model.point) )
 
 
 urlUpdate : Navigation.Location -> Model -> ( Model, Cmd Msg )
@@ -139,18 +156,10 @@ mainContent model =
                 List.map (Html.map DistancePage) (DistancePage.view model.distancePage)
 
             Maps ->
-                pageMaps model
+                viewMaps model
 
             NotFound ->
                 pageNotFound
-
-
-pageMaps : Model -> List (Html Msg)
-pageMaps model =
-    [ div []
-        [ h2 [] [ text "Hello World" ]
-        ]
-    ]
 
 
 pageNotFound : List (Html Msg)
@@ -158,6 +167,41 @@ pageNotFound =
     [ h1 [] [ text "Not found" ]
     , text "Sorry this page couldn't be found"
     ]
+
+
+viewMaps : Model -> List (Html Msg)
+viewMaps model =
+    [ div []
+        [ Grid.row []
+            [ Grid.col [ Col.xs8 ]
+                [ div [ id "map" ] []
+                ]
+            , Grid.col [ Col.xs4 ]
+                [ latLngViewMaps model ]
+            ]
+        ]
+    ]
+
+
+latLngViewMaps : Model -> Html Msg
+latLngViewMaps model =
+    div []
+        [ Grid.row []
+            [ Grid.col [ Col.xs5 ]
+                [ h5 [] [ text "Add Latitude/Longitude Value" ]
+                , Html.map LatLngMsg (LatLng.view model.point)
+                , Grid.row []
+                    [ Grid.col []
+                        [ Button.button
+                            [ Button.primary
+                            , Button.onClick ShowPoint
+                            ]
+                            [ text "Show Point" ]
+                        ]
+                    ]
+                ]
+            ]
+        ]
 
 
 main : Program Never Model Msg
