@@ -1,4 +1,4 @@
-module DistancePage exposing (Model, init, Msg, update, view)
+port module DistancePage exposing (Model, init, Msg, update, view)
 
 import Point exposing (..)
 import LatLng exposing (..)
@@ -11,12 +11,23 @@ import Bootstrap.Button as Button
 import Bootstrap.ButtonGroup as ButtonGroup
 
 
+port setDistance : MapsModel -> Cmd msg
+
+
 type alias Model =
     { point : Point.Model
     , latlng : LatLng.Model
     , d1 : Point.Model
     , d2 : Point.Model
     , dist : Float
+    , showMaps : Bool
+    , mapsModel : MapsModel
+    }
+
+
+type alias MapsModel =
+    { d1 : LatLng.LatLng
+    , d2 : LatLng.LatLng
     }
 
 
@@ -27,6 +38,15 @@ init =
     , d1 = Point.init
     , d2 = Point.init
     , dist = 0
+    , showMaps = False
+    , mapsModel = initMapsModel
+    }
+
+
+initMapsModel : MapsModel
+initMapsModel =
+    { d1 = LatLng.initLatLng
+    , d2 = LatLng.initLatLng
     }
 
 
@@ -44,37 +64,53 @@ type Msg
     | PMsg Point.Msg
     | D1Msg Point.Msg
     | D2Msg Point.Msg
+    | ShowMaps
 
 
-update : Msg -> Model -> Model
+update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
-    case msg of
-        ConvertLatLng ->
-            { model | point = latlngToPointOnModels model.latlng }
+    let
+        d1LatLng =
+            pointModelToLatLng model.d1
 
-        ConvertPoint ->
-            { model | latlng = pointToLatLngOnModels model.point }
+        d2LatLng =
+            pointModelToLatLng model.d2
+    in
+        case msg of
+            ConvertLatLng ->
+                ( { model | point = latlngToPointOnModels model.latlng }, Cmd.none )
 
-        LatLngMsg subMsg ->
-            { model | latlng = LatLng.update subMsg model.latlng }
+            ConvertPoint ->
+                ( { model | latlng = pointToLatLngOnModels model.point }, Cmd.none )
 
-        PMsg subMsg ->
-            { model | point = Point.update subMsg model.point }
+            LatLngMsg subMsg ->
+                ( { model | latlng = LatLng.update subMsg model.latlng }, Cmd.none )
 
-        D1Msg subMsg ->
-            { model | d1 = Point.update subMsg model.d1 }
+            PMsg subMsg ->
+                ( { model | point = Point.update subMsg model.point }, Cmd.none )
 
-        D2Msg subMsg ->
-            { model | d2 = Point.update subMsg model.d2 }
+            D1Msg subMsg ->
+                ( { model | d1 = Point.update subMsg model.d1 }, Cmd.none )
 
-        CalculateDistance ->
-            { model | dist = Point.distOnModels model.d1 model.d2 }
+            D2Msg subMsg ->
+                ( { model | d2 = Point.update subMsg model.d2 }, Cmd.none )
 
-        CopyD1 ->
-            { model | d1 = model.point }
+            CalculateDistance ->
+                ( { model | dist = Point.distOnModels model.d1 model.d2 }, Cmd.none )
 
-        CopyD2 ->
-            { model | d2 = model.point }
+            CopyD1 ->
+                ( { model | d1 = model.point }, Cmd.none )
+
+            CopyD2 ->
+                ( { model | d2 = model.point }, Cmd.none )
+
+            ShowMaps ->
+                ( { model | showMaps = xor model.showMaps True }
+                , setDistance
+                    { d1 = d1LatLng
+                    , d2 = d2LatLng
+                    }
+                )
 
 
 
@@ -86,6 +122,7 @@ view model =
     [ conversionView model
     , br [] []
     , distanceView model
+    , mapsView model
     ]
 
 
@@ -188,4 +225,28 @@ distancePoint2View point =
     div []
         [ h5 [] [ text "Point D2" ]
         , Html.map D2Msg (Point.view point)
+        ]
+
+
+mapsView : Model -> Html Msg
+mapsView model =
+    div []
+        [ Grid.row []
+            [ Grid.col [ Col.xs12 ]
+                [ h2 [] [ text "Google Maps" ] ]
+            ]
+        , Grid.row []
+            [ Grid.col [ Col.xs5 ]
+                [ Button.button
+                    [ Button.primary
+                    , Button.onClick ShowMaps
+                    ]
+                    [ text "Show in Maps" ]
+                ]
+            ]
+        , Grid.row []
+            [ Grid.col [ Col.xs12 ]
+                [ div [ id "distanceMap" ] []
+                ]
+            ]
         ]

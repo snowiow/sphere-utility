@@ -10,7 +10,7 @@
   </head>
   <body>
     <div id="elm-area"></div>
-    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDG4-TeEQEyo0LUZ1afSPA1R_mm4B2aP1o"
+    <script src="https://maps.googleapis.com/maps/api/js?key=<?php include 'my-key.local'; ?>"
     async defer></script>
     <script src="bundle.js"></script>
     <script>
@@ -25,6 +25,35 @@
           position: point,
           map: map,
         });
+      });
+      app.ports.setDistance.subscribe(function(distObj) {
+        var map = new google.maps.Map(document.getElementById('distanceMap'), {
+          zoom: 3,
+          center: distObj.d1,
+          mapTypeId: 'terrain'
+        });
+        var marker = new google.maps.Marker({
+          position: distObj.d1,
+          Label: 'A',
+          map: map,
+        });
+        var marker = new google.maps.Marker({
+          position: distObj.d2,
+          Label: 'B',
+          map: map,
+        });
+        var path = [
+          distObj.d1,
+          distObj.d2
+        ];
+        var distPath = new google.maps.Polyline({
+          path: path,
+          geodesic: true,
+          strokeColor: '#FF0000',
+          strokeOpacity: 1.0,
+          strokeWeight: 2
+        });
+        distPath.setMap(map);
       });
     </script>
   </body>

@@ -24,9 +24,14 @@ latlngToPointOnModels =
     LatLng.modelToLatLng >> latlngToPoint >> Point.pointToModel
 
 
+pointModelToLatLng : Point.Model -> LatLng.LatLng
+pointModelToLatLng =
+    Point.modelToPoint >> pointToLatLng
+
+
 pointToLatLngOnModels : Point.Model -> LatLng.Model
 pointToLatLngOnModels =
-    Point.modelToPoint >> pointToLatLng >> LatLng.latLngToModel
+    pointModelToLatLng >> LatLng.latLngToModel
 
 
 pointToLatLng : Point -> LatLng

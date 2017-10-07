@@ -10,22 +10,22 @@ var gulp = require('gulp'),
 
 var cmd = 'elm make ./src/Main.elm --output ./bundle.js';
 clear();
-gulp.task('default', ['server', 'watch', 'elm']);
+gulp.task('default', ['watch', 'elm']);
 
 gulp.task('watch', function(cb) {
   gulp.watch('**/*.elm', ['elm']);
 });
 
-gulp.task('server', function(done) {
-  gutil.log(gutil.colors.blue('Starting server at http://localhost:4000'));
-  http.createServer(
-    st({
-      path: __dirname,
-      index: 'index.html',
-      cache: false
-    })
-  ).listen(4000, done);
-});
+// gulp.task('server', function(done) {
+//   gutil.log(gutil.colors.blue('Starting server at http://localhost:4000'));
+//   http.createServer(
+//     st({
+//       path: __dirname,
+//       index: 'index.html',
+//       cache: false
+//     })
+//   ).listen(4000, done);
+// });
 
 gulp.task('elm', function(cb) {
   if (counter > 0){

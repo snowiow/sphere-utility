@@ -21,3 +21,9 @@ h5.error {
     height: 200%;
     background-color: #d6d4d4;
 }
+
+#distanceMap {
+    width: 50em;
+    height: 30em;
+    background-color: #d6d4d4;
+}

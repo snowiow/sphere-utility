@@ -4,7 +4,6 @@ import Html exposing (..)
 import Html.Attributes exposing (type_, value, class, id, for)
 import FloatInput exposing (FloatInput)
 import Bootstrap.Grid as Grid
-import Bootstrap.Grid.Col as Col
 import Bootstrap.Form as Form
 import Bootstrap.Form.Input as Input
 

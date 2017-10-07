@@ -77,12 +77,15 @@ update msg model =
             urlUpdate location model
 
         DistancePage subMsg ->
-            ( { model
-                | distancePage =
+            let
+                ( subModel, cmd ) =
                     DistancePage.update subMsg model.distancePage
-              }
-            , Cmd.none
-            )
+            in
+                ( { model
+                    | distancePage = subModel
+                  }
+                , Cmd.map DistancePage cmd
+                )
 
         LatLngMsg subMsg ->
             ( { model | point = LatLng.update subMsg model.point }, Cmd.none )
